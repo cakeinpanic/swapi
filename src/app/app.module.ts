@@ -1,9 +1,9 @@
 import { HttpClientModule } from '@angular/common/http'
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser'
+import { NgModule } from '@angular/core'
 import { ApiService } from './api.service'
 
-import { AppComponent } from './app.component';
+import { AppComponent } from './app.component'
 import { TableService } from './table.service'
 
 @NgModule({
@@ -14,7 +14,7 @@ import { TableService } from './table.service'
     BrowserModule,
     HttpClientModule
   ],
-  providers: [ApiService,TableService],
+  providers: [ApiService, TableService],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

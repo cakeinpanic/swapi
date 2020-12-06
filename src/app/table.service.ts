@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
-import { forkJoin, Observable } from 'rxjs'
-import { concatAll, map, mergeMap, switchMap } from 'rxjs/operators'
-import { ApiService, IPilot, IPlanet, IVehicle, Population } from './api.service'
+import { forkJoin, Observable, of } from 'rxjs'
+import { map, mergeMap, switchMap } from 'rxjs/operators'
+import { ApiService, IPilot, IVehicle, Population } from './api.service'
 
 interface IVehicleInfo {
   name: string
@@ -13,6 +13,11 @@ interface IVehicleInfo {
 interface IPlanetInfo {
   name: string,
   population: Population
+}
+
+interface IPilotExtendedInfo {
+  planet: IPlanetInfo
+  name: string
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,27 +35,32 @@ export class TableService {
   }
 
   getVehicleInfo(vehicle: IVehicle): Observable<IVehicleInfo> {
-    return forkJoin(vehicle.pilots.map(({ url }: IPilot) => this.getPilotHomelandInfo(url)))
+    return forkJoin(vehicle.pilots.map((pilot: string) => {
+      return this.getPilotHomelandInfo(pilot)
+    }))
       .pipe(
-        map((planets: IPlanetInfo[]): IVehicleInfo => {
+        map((planets: IPilotExtendedInfo[]): IVehicleInfo => {
           return {
             name: vehicle.name,
-            pilots: vehicle.pilots.map(({ name }) => ({ name })),
-            planets,
+            pilots: planets.map(({ name }) => ({name})),
+            planets: planets.map(({ planet }) => planet),
             aggregatedPopulation: 0
           }
         }))
   }
 
   getVehiclesWithPilots(): Observable<IVehicle[]> {
-    return this.apiService.getAllVehicles().pipe(map(v => v.filter(({ pilots }) => pilots.length > 0)))
+    return this.apiService.getAllVehicles().pipe(map(v => {
+      debugger
+      return v.filter(({ pilots }) => pilots.length > 0)
+    }))
   }
 
-  getPilotHomelandInfo(pilotUrl: string): Observable<IPlanetInfo> {
+  getPilotHomelandInfo(pilotUrl: string): Observable<IPilotExtendedInfo> {
     return this.apiService.getPilot(pilotUrl)
       .pipe(
-        switchMap(({ homeworld }: IPilot) => this.apiService.getPlanet(homeworld)),
-        map(({ name, population }) => ({ name, population })),
+        switchMap(({ homeworld, name }: IPilot) => forkJoin(this.apiService.getPlanet(homeworld), of(name))),
+        map(([{ name, population }, pilotName]) => ({ name: pilotName, planet: { name, population } })),
       )
   }
 }

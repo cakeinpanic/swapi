@@ -1,14 +1,12 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 
-import {Memoize} from 'typescript-memoize';
-
-import { Observable, of } from 'rxjs'
-import { expand, reduce, switchMap } from 'rxjs/operators'
-import { Cacheable } from 'ts-cacheable';
+import { EMPTY, Observable } from 'rxjs'
+import { expand, reduce } from 'rxjs/operators'
+import { Cacheable } from 'ts-cacheable'
 
 export interface IVehicle {
-  pilots: IPilot[]
+  pilots: string[]
   url: string
   name: string
 }
@@ -27,14 +25,10 @@ export interface IPlanet {
 
 export type Population = number | 'unknown'
 
-interface IRequestResult<T> {
+interface IRequestResult {
   next: string
-  results: T
+  results: IVehicle[]
 }
-
-const PilotCache: Map<string, any> = new Map()
-const VehicleCache: Map<string, IVehicle> = new Map()
-const PlanetCache: Map<string, IPlanet> = new Map()
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -43,14 +37,17 @@ export class ApiService {
 
   }
 
-  //@Cacheable()
+  @Cacheable()
   getAllVehicles(url = 'https://swapi.dev/api/vehicles/'): Observable<IVehicle[]> {
-    return this.http.get<IRequestResult<IVehicle[]>>(url).pipe(
-      expand((res) => res.next ? this.getAllVehicles(res.next) : []),
-      reduce((acc, res) => acc.concat(res.data), [])
+    return this.http.get<IRequestResult>(url).pipe(
+      expand((res) => {
+        return res.next ? this.http.get<IRequestResult>(res.next) : EMPTY
+      }),
+      reduce<IRequestResult, IVehicle[]>((acc: IVehicle[], res: IRequestResult) => {
+        return acc.concat(res.results)
+      }, [])
     )
   }
-
 
   @Cacheable()
   getPilot(pilotUrl: string): Observable<IPilot> {

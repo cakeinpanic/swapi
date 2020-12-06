@@ -13,6 +13,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
+
     this.tableService.calculate().subscribe(t => {
       console.log(t)
     })
