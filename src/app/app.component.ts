@@ -8,10 +8,10 @@ import { TableService } from './table.service';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  constructor(private tableService: TableService) {}
+  constructor(private apiService: ApiService, private tableService: TableService) {}
 
   ngOnInit() {
-    this.tableService.calculate().subscribe(t => {
+    this.tableService.getTopPlanet().then(t => {
       console.log(t);
     });
   }

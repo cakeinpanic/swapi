@@ -1,69 +1,64 @@
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable, of } from 'rxjs';
-import { map, mergeMap, switchMap } from 'rxjs/operators';
-import { ApiService, IPilot, IVehicle, Population } from './api.service';
+import { map, switchMap } from 'rxjs/operators';
+import { ApiService, IPilot, IPlanet, IVehicle, UNKNOWN_POPULATION } from './api.service';
 
 interface IVehicleInfo {
   name: string;
   pilots: { name: string }[];
-  planets: IPlanetInfo[];
-  aggregatedPopulation: Population;
-}
-
-interface IPlanetInfo {
-  name: string;
-  population: Population;
-}
-
-interface IPilotExtendedInfo {
-  planet: IPlanetInfo;
-  name: string;
+  planets: {
+    name: string;
+    population: string;
+  }[];
+  aggregatedPopulation: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class TableService {
   constructor(private apiService: ApiService) {}
 
-  calculate(): Observable<IVehicleInfo[]> {
-    return this.getVehiclesWithPilots().pipe(
-      mergeMap(vehicles => {
-        return forkJoin(vehicles.map(v => this.getVehicleInfo(v)));
-      })
-    );
+  async getTopPlanet(): Promise<IVehicleInfo> {
+    const allVehicles: IVehicle[] = await this.getVehiclesWithPilots();
+    const allVehiclesInfo: IVehicleInfo[] = [];
+    for (const vehicle of allVehicles) {
+      allVehiclesInfo.push(await this.getVehicleInfo(vehicle));
+    }
+    const sorted = allVehiclesInfo.sort((v1, v2) => v2.aggregatedPopulation - v1.aggregatedPopulation);
+    return sorted[0];
   }
 
-  getVehicleInfo(vehicle: IVehicle): Observable<IVehicleInfo> {
-    return forkJoin(
-      vehicle.pilots.map((pilot: string) => {
-        return this.getPilotHomelandInfo(pilot);
-      })
-    ).pipe(
-      map(
-        (planets: IPilotExtendedInfo[]): IVehicleInfo => {
-          return {
-            name: vehicle.name,
-            pilots: planets.map(({ name }) => ({ name })),
-            planets: planets.map(({ planet }) => planet),
-            aggregatedPopulation: 0,
-          };
-        }
-      )
-    );
+  async getVehicleInfo(vehicle: IVehicle): Promise<IVehicleInfo> {
+    const info: IVehicleInfo = {
+      name: vehicle.name,
+      pilots: [],
+      planets: [],
+      aggregatedPopulation: 0,
+    };
+
+    for (const pilotUrl of vehicle.pilots) {
+      const { name: pilotName } = await this.getPilotInfo(pilotUrl);
+      const { name: planetName, population } = await this.getPilotHomelandInfo(pilotUrl);
+      info.planets.push({ name: planetName, population });
+      info.pilots.push({ name: pilotName });
+      info.aggregatedPopulation += population === UNKNOWN_POPULATION ? 0 : +population;
+    }
+    return info;
   }
 
-  getVehiclesWithPilots(): Observable<IVehicle[]> {
-    return this.apiService.getAllVehicles().pipe(
-      map(v => {
-        debugger;
-        return v.filter(({ pilots }) => pilots.length > 0);
-      })
-    );
+  async getPilotInfo(pilotUrl: string): Promise<IPilot> {
+    return this.apiService.getPilot(pilotUrl).toPromise();
   }
 
-  getPilotHomelandInfo(pilotUrl: string): Observable<IPilotExtendedInfo> {
-    return this.apiService.getPilot(pilotUrl).pipe(
-      switchMap(({ homeworld, name }: IPilot) => forkJoin(this.apiService.getPlanet(homeworld), of(name))),
-      map(([{ name, population }, pilotName]) => ({ name: pilotName, planet: { name, population } }))
-    );
+  async getVehiclesWithPilots(): Promise<IVehicle[]> {
+    return this.apiService
+      .getAllVehicles()
+      .pipe(map(v => v.filter(({ pilots }) => pilots.length > 0)))
+      .toPromise();
+  }
+
+  async getPilotHomelandInfo(pilotUrl: string): Promise<IPlanet> {
+    return this.apiService
+      .getPilot(pilotUrl)
+      .pipe(switchMap(({ homeworld }: IPilot) => this.apiService.getPlanet(homeworld)))
+      .toPromise();
   }
 }

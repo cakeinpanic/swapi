@@ -1,9 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { EMPTY, Observable } from 'rxjs';
-import { expand, reduce } from 'rxjs/operators';
-import { Cacheable } from 'ts-cacheable';
+import { EMPTY, Observable, of } from 'rxjs';
+import { expand, reduce, tap } from 'rxjs/operators';
 
 export interface IVehicle {
   pilots: string[];
@@ -20,10 +19,9 @@ export interface IPilot {
 export interface IPlanet {
   name: string;
   url: string;
-  population: Population;
+  population: string;
 }
-
-export type Population = number | 'unknown';
+export const UNKNOWN_POPULATION = 'unknown';
 
 interface IRequestResult {
   next: string;
@@ -32,27 +30,31 @@ interface IRequestResult {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+  private pilotCache = new Map();
+  private planetCache = new Map();
+
   constructor(private http: HttpClient) {}
 
-  @Cacheable()
   getAllVehicles(url = 'https://swapi.dev/api/vehicles/'): Observable<IVehicle[]> {
     return this.http.get<IRequestResult>(url).pipe(
-      expand(res => {
-        return res.next ? this.http.get<IRequestResult>(res.next) : EMPTY;
-      }),
-      reduce<IRequestResult, IVehicle[]>((acc: IVehicle[], res: IRequestResult) => {
-        return acc.concat(res.results);
-      }, [])
+      expand(res => (res.next ? this.http.get<IRequestResult>(res.next) : EMPTY)),
+      reduce<IRequestResult, IVehicle[]>((acc: IVehicle[], res: IRequestResult) => acc.concat(res.results), [])
     );
   }
 
-  @Cacheable()
   getPilot(pilotUrl: string): Observable<IPilot> {
-    return this.http.get<IPilot>(pilotUrl);
+    return this.cacheRequest<IPilot>(pilotUrl, this.pilotCache);
   }
 
-  @Cacheable()
   getPlanet(platenUrl: string): Observable<IPlanet> {
-    return this.http.get<IPlanet>(platenUrl);
+    return this.cacheRequest<IPlanet>(platenUrl, this.planetCache);
+  }
+
+  private cacheRequest<T>(url, cache): Observable<T> {
+    const cached = cache.get(url);
+    if (!!cached) {
+      return of(cached);
+    }
+    return this.http.get<T>(url).pipe(tap(p => cache.set(url, p)));
   }
 }
