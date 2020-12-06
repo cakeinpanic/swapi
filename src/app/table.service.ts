@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { map, switchMap } from 'rxjs/operators';
 import { ApiService, IPilot, IPlanet, IVehicle, UNKNOWN_POPULATION } from './api.service';
 
-interface IVehicleInfo {
+export interface IVehicleInfo {
   name: string;
   pilots: { name: string }[];
   planets: {
