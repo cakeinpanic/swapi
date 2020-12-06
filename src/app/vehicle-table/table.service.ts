@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { map, switchMap } from 'rxjs/operators';
-import { ApiService, IPilot, IPlanet, IVehicle, UNKNOWN_POPULATION } from './api.service';
+import { ApiService, IPilot, IPlanet, IVehicle, UNKNOWN_POPULATION } from '../api.service';
 
 export interface IVehicleInfo {
   name: string;

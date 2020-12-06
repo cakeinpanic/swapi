@@ -1,0 +1,9 @@
+<app-loader *ngIf="!isLoaded"></app-loader>
+<div *ngIf="isLoaded" class="chart">
+  <div class="bar bar-container"
+       *ngFor="let col of planetData"
+       [style.height.%]="col.value"
+  >
+    <div class="bar-value">{{col.value}}</div>
+  </div>
+</div>

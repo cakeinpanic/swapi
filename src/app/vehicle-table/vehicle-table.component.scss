@@ -1,6 +1,6 @@
 :host {
   display: flex;
-  height: 400px;
+  height: 300px;
   width: 100%;
   align-items: center;
   justify-content: center;
@@ -9,7 +9,6 @@
 .table {
   color: white;
   font-size: 17px;
-  font-family: Roboto, sans-serif;
   font-weight: 400;
 
   .cell {

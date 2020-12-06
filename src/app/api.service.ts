@@ -21,6 +21,7 @@ export interface IPlanet {
   url: string;
   population: string;
 }
+
 export const UNKNOWN_POPULATION = 'unknown';
 
 interface IRequestResult {

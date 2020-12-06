@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+  height: 400px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart {
+  height: 300px;
+  width: 400px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  .bar {
+    min-width: 30px;
+    width: 30%;
+    background: #99cccc 0%;
+    position: relative;
+    text-align: center;
+    margin: 0 2%;
+
+    &-value {
+      color: white;
+      font-size: 20px;
+      position: relative;
+      margin: 0 auto;
+      top: -30px;
+    }
+  }
+}
