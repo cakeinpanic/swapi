@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService, IPlanet } from '../api.service';
-import { ChartService, IPlanetData } from './chart.service';
-import { IVehicleInfo, TableService } from '../vehicle-table/table.service';
+import { ChartService } from './chart.service';
+
+interface IChartData {
+  value: number;
+  label: string;
+  name: string;
+}
 
 @Component({
   selector: 'app-planet-chart',
@@ -9,20 +13,29 @@ import { IVehicleInfo, TableService } from '../vehicle-table/table.service';
   styleUrls: ['./planet-chart.component.scss'],
 })
 export class PlanetChartComponent implements OnInit {
-  planetData: IPlanetData[] = [];
+  planetData: IChartData[] = [];
   isLoaded = false;
-  max: number;
 
   constructor(private chartService: ChartService) {}
 
   async ngOnInit() {
     this.isLoaded = false;
-    this.chartService.getPlanetsInfo(['f']).subscribe(data => {
-      this.planetData = data;
-      const max = Math.max(...this.planetData.map(({ value }) => value));
-      this.planetData = data.map(({ value, name }) => ({ name, value: (value / max) * 100 }));
+    this.chartService
+      .getPlanetsInfo([
+        'http://swapi.dev/api/planets/1/',
+        'http://swapi.dev/api/planets/2/',
+        'http://swapi.dev/api/planets/6/',
+        'http://swapi.dev/api/planets/7/',
+        'http://swapi.dev/api/planets/8/',
+      ])
+      .subscribe(data => {
+        const max = Math.max(...data.map(({ population }) => +population));
+        this.planetData = data.map(({ population, name }) => {
+          const value = +population;
+          return { name, value: (value / max) * 100, label: population };
+        });
 
-      this.isLoaded = true;
-    });
+        this.isLoaded = true;
+      });
   }
 }

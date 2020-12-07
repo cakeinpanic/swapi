@@ -26,7 +26,7 @@ export class TableService {
     return sorted[0];
   }
 
-  async getVehicleInfo(vehicle: IVehicle): Promise<IVehicleInfo> {
+  private async getVehicleInfo(vehicle: IVehicle): Promise<IVehicleInfo> {
     const info: IVehicleInfo = {
       name: vehicle.name,
       pilots: [],
@@ -41,21 +41,22 @@ export class TableService {
       info.pilots.push({ name: pilotName });
       info.aggregatedPopulation += population === UNKNOWN_POPULATION ? 0 : +population;
     }
+
     return info;
   }
 
-  async getPilotInfo(pilotUrl: string): Promise<IPilot> {
+  private async getPilotInfo(pilotUrl: string): Promise<IPilot> {
     return this.apiService.getPilot(pilotUrl).toPromise();
   }
 
-  async getVehiclesWithPilots(): Promise<IVehicle[]> {
+  private async getVehiclesWithPilots(): Promise<IVehicle[]> {
     return this.apiService
       .getAllVehicles()
       .pipe(map(v => v.filter(({ pilots }) => pilots.length > 0)))
       .toPromise();
   }
 
-  async getPilotHomelandInfo(pilotUrl: string): Promise<IPlanet> {
+  private async getPilotHomelandInfo(pilotUrl: string): Promise<IPlanet> {
     return this.apiService
       .getPilot(pilotUrl)
       .pipe(switchMap(({ homeworld }: IPilot) => this.apiService.getPlanet(homeworld)))

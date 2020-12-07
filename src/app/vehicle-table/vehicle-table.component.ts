@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../api.service';
 import { IVehicleInfo, TableService } from './table.service';
 
 @Component({
@@ -11,7 +10,7 @@ export class VehicleTableComponent implements OnInit {
   topVehicle: IVehicleInfo = null;
   isLoaded = false;
 
-  constructor(private apiService: ApiService, private tableService: TableService) {}
+  constructor(private tableService: TableService) {}
 
   async ngOnInit() {
     this.isLoaded = false;
