@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { mapTo, startWith } from 'rxjs/operators';
+import { mapTo, startWith, tap } from 'rxjs/operators';
 import { ChartService, IChartData } from './chart.service';
 
 @Component({
@@ -8,16 +8,18 @@ import { ChartService, IChartData } from './chart.service';
   templateUrl: './planet-chart.component.html',
   styleUrls: ['./planet-chart.component.scss'],
 })
-export class PlanetChartComponent {
-  planetData$: Observable<IChartData[]> = this.chartService.getChartsData([
-    'http://swapi.dev/api/planets/1/',
-    'http://swapi.dev/api/planets/2/',
-    'http://swapi.dev/api/planets/6/',
-    'http://swapi.dev/api/planets/7/',
-    'http://swapi.dev/api/planets/8/',
-  ]);
-
-  isLoaded$: Observable<boolean> = this.planetData$.pipe(mapTo(true), startWith(false));
+export class PlanetChartComponent implements OnInit {
+  @Input() planetUrls: string[];
+  planetData: IChartData[] = [];
+  isLoaded = false;
 
   constructor(private chartService: ChartService) {}
+
+  async ngOnInit() {
+    this.isLoaded = false;
+    this.chartService.getChartsData(this.planetUrls).subscribe(data => {
+      this.planetData = data;
+      this.isLoaded = true;
+    });
+  }
 }
