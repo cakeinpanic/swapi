@@ -30,6 +30,9 @@ interface IRequestResult {
   results: IVehicle[];
 }
 
+// swapi returns urls with http, need to force https to let app be deployed to gh-pages
+const forceHttps = (url: string): string => url.replace('http://', 'https://');
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private pilotCache = new Map();
@@ -39,17 +42,17 @@ export class ApiService {
 
   getAllVehicles(url = 'https://swapi.dev/api/vehicles/'): Observable<IVehicle[]> {
     return this.http.get<IRequestResult>(url).pipe(
-      expand(res => (res.next ? this.http.get<IRequestResult>(res.next) : EMPTY)),
+      expand(res => (res.next ? this.http.get<IRequestResult>(forceHttps(res.next)) : EMPTY)),
       reduce<IRequestResult, IVehicle[]>((acc: IVehicle[], res: IRequestResult) => acc.concat(res.results), [])
     );
   }
 
   getPilot(pilotUrl: string): Observable<IPilot> {
-    return this.cacheRequest<IPilot>(pilotUrl, this.pilotCache);
+    return this.cacheRequest<IPilot>(forceHttps(pilotUrl), this.pilotCache);
   }
 
-  getPlanet(platenUrl: string): Observable<IPlanet> {
-    return this.cacheRequest<IPlanet>(platenUrl, this.planetCache).pipe(
+  getPlanet(planetUrl: string): Observable<IPlanet> {
+    return this.cacheRequest<IPlanet>(forceHttps(planetUrl), this.planetCache).pipe(
       map(planet => ({
         ...planet,
         numberPopulation: planet.population === UNKNOWN_POPULATION ? 0 : +planet.population,
