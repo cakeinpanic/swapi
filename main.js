@@ -557,9 +557,11 @@ class ApiService {
     cacheRequest(url, cache) {
         const cached = cache.get(url);
         if (!!cached) {
-            return Object(rxjs__WEBPACK_IMPORTED_MODULE_1__["of"])(cached);
+            return cached;
         }
-        return this.http.get(url).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["tap"])(p => cache.set(url, p)));
+        const request = this.http.get(url).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["shareReplay"])({ refCount: true, bufferSize: 1 }));
+        cache.set(url, request);
+        return request;
     }
 }
 ApiService.ɵfac = function ApiService_Factory(t) { return new (t || ApiService)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_3__["HttpClient"])); };
