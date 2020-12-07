@@ -298,6 +298,7 @@ class TableService {
                 allVehiclesInfo.push(yield this.getVehicleInfo(vehicle));
             }
             const sorted = allVehiclesInfo.sort((v1, v2) => v2.aggregatedPopulation - v1.aggregatedPopulation);
+            console.log(sorted);
             return sorted[0];
         });
     }
@@ -414,7 +415,7 @@ function VehicleTableComponent_table_1_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](12, "tr");
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](13, "th", 4);
-    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](14, "Related home planets and their respective population");
+    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](14, "Related pilot names");
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](15, "td", 5);
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtemplate"](16, VehicleTableComponent_table_1_div_16_Template, 2, 1, "div", 6);
