@@ -23,6 +23,7 @@ export class TableService {
       allVehiclesInfo.push(await this.getVehicleInfo(vehicle));
     }
     const sorted = allVehiclesInfo.sort((v1, v2) => v2.aggregatedPopulation - v1.aggregatedPopulation);
+    console.log(sorted);
     return sorted[0];
   }
 
