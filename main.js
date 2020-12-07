@@ -537,6 +537,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const UNKNOWN_POPULATION = 'unknown';
+// swapi returns urls with http, need to force https to let app be deployed to gh-pages
+const forceHttps = (url) => url.replace('http://', 'https://');
 class ApiService {
     constructor(http) {
         this.http = http;
@@ -544,13 +546,13 @@ class ApiService {
         this.planetCache = new Map();
     }
     getAllVehicles(url = 'https://swapi.dev/api/vehicles/') {
-        return this.http.get(url).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["expand"])(res => (res.next ? this.http.get(res.next) : rxjs__WEBPACK_IMPORTED_MODULE_1__["EMPTY"])), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["reduce"])((acc, res) => acc.concat(res.results), []));
+        return this.http.get(url).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["expand"])(res => (res.next ? this.http.get(forceHttps(res.next)) : rxjs__WEBPACK_IMPORTED_MODULE_1__["EMPTY"])), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["reduce"])((acc, res) => acc.concat(res.results), []));
     }
     getPilot(pilotUrl) {
-        return this.cacheRequest(pilotUrl, this.pilotCache);
+        return this.cacheRequest(forceHttps(pilotUrl), this.pilotCache);
     }
-    getPlanet(platenUrl) {
-        return this.cacheRequest(platenUrl, this.planetCache).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])(planet => (Object.assign(Object.assign({}, planet), { numberPopulation: planet.population === UNKNOWN_POPULATION ? 0 : +planet.population }))));
+    getPlanet(planetUrl) {
+        return this.cacheRequest(forceHttps(planetUrl), this.planetCache).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])(planet => (Object.assign(Object.assign({}, planet), { numberPopulation: planet.population === UNKNOWN_POPULATION ? 0 : +planet.population }))));
     }
     cacheRequest(url, cache) {
         const cached = cache.get(url);
