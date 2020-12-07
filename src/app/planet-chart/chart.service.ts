@@ -22,10 +22,10 @@ export class ChartService {
   getChartsData(planetUrls: string[]): Observable<IChartData[]> {
     return this.getPlanetsChartInfo(planetUrls).pipe(
       map(data => {
-        const max = Math.max(...data.map(({ population }) => +population));
+        const max = Math.max(...data.map(({ numberPopulation }) => numberPopulation));
 
-        return data.map(({ population, name }) => {
-          let value = (+population / max) * 100;
+        return data.map(({ numberPopulation, population, name }) => {
+          let value = (numberPopulation / max) * 100;
           if (value <= MIN_BAR_HEIGHT) {
             value += MIN_BAR_HEIGHT;
           }

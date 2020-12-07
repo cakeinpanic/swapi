@@ -7,7 +7,7 @@ export interface IVehicleInfo {
   pilots: { name: string }[];
   planets: {
     name: string;
-    population: string;
+    population: number;
   }[];
   aggregatedPopulation: number;
 }
@@ -36,10 +36,10 @@ export class TableService {
 
     for (const pilotUrl of vehicle.pilots) {
       const { name: pilotName } = await this.getPilotInfo(pilotUrl);
-      const { name: planetName, population } = await this.getPilotHomelandInfo(pilotUrl);
-      info.planets.push({ name: planetName, population });
+      const { name: planetName, numberPopulation } = await this.getPilotHomelandInfo(pilotUrl);
+      info.planets.push({ name: planetName, population: numberPopulation });
       info.pilots.push({ name: pilotName });
-      info.aggregatedPopulation += population === UNKNOWN_POPULATION ? 0 : +population;
+      info.aggregatedPopulation += numberPopulation;
     }
 
     return info;

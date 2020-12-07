@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { EMPTY, Observable, of } from 'rxjs';
-import { expand, reduce, tap } from 'rxjs/operators';
+import { expand, map, reduce, tap } from 'rxjs/operators';
 
 export interface IVehicle {
   pilots: string[];
@@ -20,6 +20,7 @@ export interface IPlanet {
   name: string;
   url: string;
   population: string;
+  numberPopulation?: number;
 }
 
 export const UNKNOWN_POPULATION = 'unknown';
@@ -48,7 +49,12 @@ export class ApiService {
   }
 
   getPlanet(platenUrl: string): Observable<IPlanet> {
-    return this.cacheRequest<IPlanet>(platenUrl, this.planetCache);
+    return this.cacheRequest<IPlanet>(platenUrl, this.planetCache).pipe(
+      map(planet => ({
+        ...planet,
+        numberPopulation: planet.population === UNKNOWN_POPULATION ? 0 : +planet.population,
+      }))
+    );
   }
 
   private cacheRequest<T>(url, cache): Observable<T> {
