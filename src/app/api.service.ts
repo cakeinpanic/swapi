@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { EMPTY, Observable, of } from 'rxjs';
-import { expand, map, reduce, tap } from 'rxjs/operators';
+import { EMPTY, Observable } from 'rxjs';
+import { expand, map, reduce, shareReplay } from 'rxjs/operators';
 
 export interface IVehicle {
   pilots: string[];
@@ -62,9 +62,13 @@ export class ApiService {
 
   private cacheRequest<T>(url, cache): Observable<T> {
     const cached = cache.get(url);
+
     if (!!cached) {
-      return of(cached);
+      return cached;
     }
-    return this.http.get<T>(url).pipe(tap(p => cache.set(url, p)));
+
+    const request = this.http.get<T>(url).pipe(shareReplay({ refCount: true, bufferSize: 1 }));
+    cache.set(url, request);
+    return request;
   }
 }
