@@ -1,11 +1,12 @@
-<app-loader *ngIf="!isLoaded"></app-loader>
+<app-loader *ngIf="!(isLoaded$ | async)"></app-loader>
 
-<div *ngIf="isLoaded" class="chart">
+<div *ngIf="isLoaded$ | async" class="chart">
   <div class="bar bar-container"
-       *ngFor="let col of planetData"
+       *ngFor="let col of planetData$ | async"
        [style.height.%]="col.value"
   >
     <div class="bar-value">{{col.label}}</div>
+    <div class="bar-bar"></div>
     <div class="bar-legend">{{col.name}}</div>
   </div>
 </div>
